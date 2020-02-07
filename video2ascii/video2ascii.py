@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
 import cv2
@@ -6,6 +7,13 @@ import cv2
 
 CHAR_SET = """@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. """
 CHAR_SET_LEN = len(CHAR_SET)
+
+def getfile():
+    if len(sys.argv) != 2:
+        print("arguement error, only accept one argument.\
+              example: python video2ascii.py video.mp4")
+        sys.exit(1)
+    return sys.argv[1]
 
 
 def pil2cv(image):
@@ -82,7 +90,8 @@ def text2image(text, size):
 
 
 def main():
-    cap = cv2.VideoCapture("badapple.mp4")
+    file = getfile()
+    cap = cv2.VideoCapture(file)
     threads = []
     while cap.isOpened():
         ret, frame = cap.read()

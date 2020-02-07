@@ -7,4 +7,4 @@ open cmd console and run ```python video2ascii.py video.mp4```command
 
 ## result
 
-![]("./demo.png")
+![demo](demo.png)

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 arg=$1
+
 if [ ${#arg} == 0 ];
 then
 	echo -e "archive of certificate is necessary.\nexample:\n\t./deplySSL.sh domain.zip"
@@ -12,25 +13,37 @@ apacheSSL="/etc/apache2/site-available/default-ssl.conf"
 ngnixSSL=""
 tomcatSSL=""
 
-# 使用expr需要注意，由于REGEX中隐含了"^"，所以使得匹配时都是从string首字符开始的。
+# 如果使用expr需要注意，由于REGEX中隐含了"^"，所以使得匹配时都是从string首字符开始的。
 domain=$(echo $arg | grep -Eo ".*\.(com|org|net|cn|jp|me)")
 
 apache2()
 {
-	`mkdir ~/ca`
+	if [ ! -d ~/ca ];
+	then
+		mkdir ~/ca
+	fi
+	
 	if [ `command -v unzip` ];
 	then
-		`unzip $1 ~/ca`
+		unzip $arg ~/ca
 	else
-		`apt install unzip`
-		`unzip $1 ~/ca`
+		apt install unzip
+		unzip $arg ~/ca
 	fi
-	`mkdir /etc/apache2/ca`
-	`cp ~/ca/Apache/* /etc/apache2/ca`
-	`ln -s $apacheSSL /etc/apache2/site-enbaled/ssl.conf`
-	`sed -i 's/ssl.*\.pem$/apache2\/ca\/2_$domain.crt/g' $apacheSSL`
-	`sed -i 's/ssl.*\.key/apache2\/ca\/3_$domain.key/g' $apacheSSL`
-	`sed -i 's/ssl.*\.ctr/ca\/1_root_bundle.crt/g' $apacheSSL`
+	
+	if [ ! -d /etc/apache2/ca ];
+	then
+		mkdir /etc/apache2/ca
+	fi
+	
+	cp ~/ca/Apache/* /etc/apache2/ca
+	rm -rf ~/ca
+	ln -s $apacheSSL /etc/apache2/site-enbaled/ssl.conf
+	sed -i 's/ssl.*\.pem$/apache2\/ca\/2_'$domain'.crt/g' $apacheSSL
+	sed -i 's/ssl.*\.key/apache2\/ca\/3_'$domain'.key/g' $apacheSSL
+	sed -i 's/#SSL.*server-ca.crt/SSLCertificateChainFile \/etc\/apache2\/ca\/1_root_bundle.crt/g' $apacheSSL`
+	a2enmod ssl
+	systemctl restart apache2
 	echo "set up successfully."
 	exit
 	
